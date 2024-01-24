@@ -2,12 +2,34 @@
     "name": "Training Peaks Library Export Extension",
     "description": "Training Peaks Library Export Extension",
     "version": "1.0.0",
-    "content_security_policy": {
-        "extension_pages": "script-src 'self' ; object-src 'self'"
-    },
-    "action": {
-        "default_popup": "index.html",
-        "default_icon": "icons/Icon-192.png"
-    },
-    "manifest_version": 3
+    "permissions": [
+        "activeTab",
+        "declarativeContent",
+        "storage"
+      ],
+      "background": {
+        "scripts": [
+          "tool/background.js"
+        ],
+        "persistent": false
+      },
+      "page_action": {
+        "default_popup": "index.html"
+       
+      },
+     
+      "content_security_policy": "script-src 'self' ; object-src 'self'",
+      "content_scripts": [
+        {
+          "matches": [
+            "https://app.trainingpeaks.com/*"
+          ],
+          "js": [
+            "tool/script.js"
+          ],
+          "run_at": "document_end"
+        }
+      ],
+      "manifest_version": 2
+    
 }

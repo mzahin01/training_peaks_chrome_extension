@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  js: ^0.7.0
+  web: ^0.3.0
 
 dev_dependencies:
   flutter_test:
