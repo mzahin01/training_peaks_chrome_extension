@@ -37,7 +37,10 @@ class _MainAppState extends State<MainApp> {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                const Text('Hello World 123'),
+                const Text(
+                  'You need to get open the session you want to export and then you need to press the below button to get the session',
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(
                   height: 20,
                 ),
@@ -54,19 +57,15 @@ class _MainAppState extends State<MainApp> {
                       }
                     }
                   },
-                  // onPressed: () async {
-                  //   dynamic data;
-                  //   data = await js.context.callMethod('getData');
-                  //   print(':: $data');
-                  //   output = data.toString();
-                  //   setState(() {});
-                  // },
-                  child: const Text('Print to Console'),
+                  child: const Text('Get Library Data'),
                 ),
                 const SizedBox(
                   height: 20,
                 ),
-                Text(output ?? 'NO output'),
+                Text(
+                  output ?? 'No output pursed yet',
+                  textAlign: TextAlign.center,
+                ),
               ],
             ),
           ),
