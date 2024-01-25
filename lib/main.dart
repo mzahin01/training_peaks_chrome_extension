@@ -2,12 +2,10 @@
 library my_js_library;
 // ignore_for_file: avoid_web_libraries_in_flutter
 
-import 'dart:js_util';
-
 import 'package:flutter/material.dart';
-// import 'package:web/web.dart' as w;
-import 'dart:js' as js;
+// import 'dart:js' as js;
 import 'package:js/js.dart';
+import 'package:js/js_util.dart';
 
 @JS('getData')
 external dynamic getData();

@@ -15,6 +15,7 @@ var output = '';
 async function getData() {
     console.log(output);
     if(output != '') {
+        console.log('outputting from cache');
         return output;
     }
     await chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
