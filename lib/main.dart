@@ -1,10 +1,19 @@
+@JS()
+library my_js_library;
 // ignore_for_file: avoid_web_libraries_in_flutter
+
+import 'dart:js_util';
 
 import 'package:flutter/material.dart';
 // import 'package:web/web.dart' as w;
 import 'dart:js' as js;
+import 'package:js/js.dart';
 
-import 'package:js/js_util.dart';
+@JS('getData')
+external dynamic getData();
+
+@JS('changeColor')
+external String changeColor(String color);
 
 void main() {
   runApp(const MainApp());
@@ -27,17 +36,14 @@ class _MainAppState extends State<MainApp> {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             FloatingActionButton(onPressed: () {
-              print(':: from Dart');
-              var got = js.context.callMethod('changeColor', ['#3aa757']);
+              var got = changeColor('#3aa757');
               output = got;
               setState(() {});
-              print(':: $got');
             }),
             FloatingActionButton(onPressed: () {
-              var got = js.context.callMethod('changeColor', ['#ffa757']);
+              var got = changeColor('#ffa757');
               output = got;
               setState(() {});
-              print(':: $got');
             }),
           ],
         ),
@@ -53,12 +59,11 @@ class _MainAppState extends State<MainApp> {
                   color: Colors.amberAccent,
                   onPressed: () async {
                     try {
-                      var promise = js.context.callMethod('getData');
-                      var result = await promiseToFuture(promise);
-                      print(result);
-                      output = result.toString();
+                      var promise = await getData();
+                      output = await promiseToFuture(promise);
                       setState(() {});
-                      print('Received data from JavaScript: $result');
+                      print('Received data from JavaScript: $output');
+                      print(output.runtimeType);
                     } catch (e) {
                       print('Error calling getData: $e');
                     }
