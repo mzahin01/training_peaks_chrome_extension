@@ -58,6 +58,7 @@ class _MainAppState extends State<MainApp> {
                   onPressed: () async {
                     try {
                       var promise = await getData();
+                      print(promise.runtimeType);
                       output = await promiseToFuture(promise);
                       setState(() {});
                       print('Received data from JavaScript: $output');
