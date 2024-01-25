@@ -1,17 +1,20 @@
 @JS()
 library my_js_library;
-// ignore_for_file: avoid_web_libraries_in_flutter
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-// import 'dart:js' as js;
 import 'package:js/js.dart';
 import 'package:js/js_util.dart';
 
 @JS('getData')
 external dynamic getData();
 
-@JS('changeColor')
-external String changeColor(String color);
+// Example of passing Data from Dart
+// @JS('changeColor')
+// external String changeColor(String color);
+// onPressed: () {
+//   var got = changeColor('#3aa757');
+// }
 
 void main() {
   runApp(const MainApp());
@@ -30,21 +33,6 @@ class _MainAppState extends State<MainApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        floatingActionButton: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            FloatingActionButton(onPressed: () {
-              var got = changeColor('#3aa757');
-              output = got;
-              setState(() {});
-            }),
-            FloatingActionButton(onPressed: () {
-              var got = changeColor('#ffa757');
-              output = got;
-              setState(() {});
-            }),
-          ],
-        ),
         body: Center(
           child: SingleChildScrollView(
             child: Column(
@@ -58,13 +46,12 @@ class _MainAppState extends State<MainApp> {
                   onPressed: () async {
                     try {
                       var promise = await getData();
-                      print(promise.runtimeType);
                       output = await promiseToFuture(promise);
                       setState(() {});
-                      print('Received data from JavaScript: $output');
-                      print(output.runtimeType);
                     } catch (e) {
-                      print('Error calling getData: $e');
+                      if (kDebugMode) {
+                        print('Error calling getData: $e');
+                      }
                     }
                   },
                   // onPressed: () async {

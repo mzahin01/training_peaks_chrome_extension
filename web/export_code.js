@@ -52,16 +52,6 @@ function convertToJSON() {
     return result;
 }
 
-
-function downloadJSON(data, filename) {
-    const jsonBlob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(jsonBlob);
-    link.download = filename;
-    link.click();
-}
-
 var jsonResult = convertToJSON();
-console.log(jsonResult);
 var json = JSON.stringify(jsonResult);
 json;

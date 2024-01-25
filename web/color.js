@@ -1,37 +1,12 @@
-function changeColor(params) {
-    let color = params;
-    
-    console.log('Color: ' + color);
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-        chrome.tabs.executeScript(
-            tabs[0].id,
-            { code: 'document.body.style.backgroundColor = "' + color + '";' });
-        });
-    return  'result change coloor : ' + color;
-}
-
-// var output = '';
-// async function getData() {
-//     console.log(output);
-//     if(output != '') {
-//         console.log('outputting from cache');
-//         return output;
-//     }
-//     await chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+// function changeColor(params) {
+//     let color = params;
+//     console.log('Color: ' + color);
+//     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
 //         chrome.tabs.executeScript(
 //             tabs[0].id,
-//             {file: "export_code.js"},
-//             function (result) {
-//                 if (chrome.runtime.lastError) {
-//                     console.error(chrome.runtime.lastError);
-//                 } else {
-//                     console.log('Got data from active tab: ' + JSON.stringify(result[0], null, 2));
-//                     output = JSON.stringify(result[0], null, 2);
-                    
-//                 }
-//             });
-//     });
-//     return output;
+//             { code: 'document.body.style.backgroundColor = "' + color + '";' });
+//         });
+//     return  'result change coloor : ' + color;
 // }
 
 async function getData() {
@@ -61,12 +36,3 @@ async function getData() {
         });
     });
 }
-
-// function getData() {
-//     var out;
-//     getData2(function(output) {
-//         out = output;
-//         console.log('Returned data: ' + output);
-//     });
-//     return out;
-// }
