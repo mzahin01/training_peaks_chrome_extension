@@ -42,8 +42,10 @@ class _MainAppState extends State<MainApp> {
 
   TextEditingController? emailController;
   TextEditingController? passwordController;
+  TextEditingController? ftpController;
   String? emailErrorText;
   String? passwordErrorText;
+  String? ftpErrorText;
 
   Future<void> removeSessionFromList(Session? session) async {
     sessionList?.sessions?.removeWhere((Session s) => s == session);
@@ -57,6 +59,7 @@ class _MainAppState extends State<MainApp> {
   void initState() async {
     emailController = TextEditingController();
     passwordController = TextEditingController();
+    ftpController = TextEditingController();
     fcmToken = await SharedPref.getFCMToken();
     sessionList = await SharedPref.getSessionList();
     setState(() {});
@@ -105,7 +108,6 @@ class _MainAppState extends State<MainApp> {
           },
         ),
         headers: {
-          'authority': 'stg-api-gw.pillar-app.com',
           'Content-Type': 'application/json',
         },
       );
@@ -114,10 +116,8 @@ class _MainAppState extends State<MainApp> {
         print(e.toString());
       }
     }
-    // print('Response status: ${response.statusCode}');
-    // print('Response body: ${response.body}');
     String sampleToken =
-        "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJmcmVzaCI6dHJ1ZSwiaWF0IjoxNzA2NjE2NDc2LCJqdGkiOiI4ZTRkYjM1ZC1kMjZlLTQzNDEtODRhOS1hODVjZTlhYjYxZGEiLCJ0eXBlIjoiYWNjZXNzIiwic3ViIjoiZDkzYTAzZjUtNjVmNS00YjM0LWI4YjEtM2JhM2ZjMTIxMDhhIiwibmJmIjoxNzA2NjE2NDc2LCJpc3MiOiJRaU9qRTJNRFE1T1RFMk1EWXNJbTVpWmlJNk1UWXdORGs1TVRZd05pd2lhblJwSWpvaU9UTmxORGt6TjJJdFpqQmhPQzAwTkdKakxUazVNVFV0TmpReFl6WmlNREJsT1Rrd0lpd2laWGh3SWpveE5qQTFOVGsyTkRBMkxDSnBaR1Z1ZEdsMGVTSTZNaXdpWm5KbGMyZ2lPbVpoYkhObExDSjBlWEJsSWpvaVlXTmpaWE56SWl3aWEiLCJleHAiOjE3MjIzODQ0NzYsImlkZW50aXR5IjoiZDkzYTAzZjUtNjVmNS00YjM0LWI4YjEtM2JhM2ZjMTIxMDhhIiwiZW1haWwiOiJ0ZXN0LTFAZ21haWwuY29tIn0.AZICiSOyVwqUktipoo6pqgdrCuxq4DQk3v9B87IG_-jx_Ng_ztqOe-bq_4zQuCrbr3GF-QvAg_2-OQOQTp6MJOQ1sp4fjrFJkWZDWP6j2uu7ZqZWFabooo_eS0VaddN27jzJpGJ5TbcZi9pvYyuChnH3IfhwYfW32soyYtVl0yTT8drK8dvGzwPsFUPLCkwoRAtTJ_8V7sD3xjbv3-Kfraq0VNyaT3o63_Bqur8bAPvtV_sJAvKt3f0So6rHyVAmZuRuDRSobHzLFht8UZtWFZDD-temBK7VxQIwB6YTTjaECQZvID71MeM4Fzz8wTZFejNjIimeiOnLJN4ldI6TWg";
+        jsonDecode(response?.body ?? '')['data']['access_jwt_token'];
     fcmToken = sampleToken;
     SharedPref.setFCMToken(sampleToken);
     setState(() {
@@ -129,10 +129,18 @@ class _MainAppState extends State<MainApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        floatingActionButton: FloatingActionButton(onPressed: () async {
-          SharedPref.removeFCMToken();
-          SharedPref.removeSessionList();
-        }),
+        floatingActionButton: fcmToken != null
+            ? FloatingActionButton(
+                onPressed: () async {
+                  SharedPref.removeFCMToken();
+                  SharedPref.removeSessionList();
+                  fcmToken = null;
+                  sessionList = null;
+                  setState(() {});
+                },
+                child: const Text('Log Out'),
+              )
+            : null,
         body: Center(
           child: Visibility(
             visible: !isLoading,
@@ -177,6 +185,20 @@ class _MainAppState extends State<MainApp> {
                 ),
                 child: Column(
                   children: [
+                    Padding(
+                      padding: const EdgeInsets.only(left: 20, right: 20),
+                      child: TextField(
+                        decoration: InputDecoration(
+                          label: const Text('FTP'),
+                          errorText: ftpErrorText,
+                        ),
+                        controller: ftpController,
+                        onChanged: (value) {},
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
                     const Text(
                       'You need to get open the session you want to export and then you need to press the below button to get the session',
                       textAlign: TextAlign.center,
