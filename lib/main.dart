@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:js/js.dart';
 import 'package:js/js_util.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:training_peaks_library_export_extension/session_model.dart';
 import 'package:training_peaks_library_export_extension/shared_preference.dart';
 import 'package:http/http.dart' as http;
 
@@ -35,6 +36,7 @@ class MainApp extends StatefulWidget {
 class _MainAppState extends State<MainApp> {
   String? output;
   String? fcmToken;
+  SessionList? sessionList;
 
   bool isLoading = false;
 
@@ -48,6 +50,7 @@ class _MainAppState extends State<MainApp> {
     emailController = TextEditingController();
     passwordController = TextEditingController();
     fcmToken = await SharedPref.getFCMToken();
+    sessionList = await SharedPref.getSessionList();
     setState(() {});
     super.initState();
   }

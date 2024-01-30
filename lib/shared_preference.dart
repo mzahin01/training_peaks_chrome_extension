@@ -1,13 +1,15 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:training_peaks_library_export_extension/session_model.dart';
 
 class SharedPref {
   static const String userFCMTokenKey = 'FCM_TOKEN';
+  static const String sessionList = 'SESSION_LIST';
 
   // FCM Token
-  static Future<void> setFCMToken(String url) async {
+  static Future<void> setFCMToken(String token) async {
     SharedPreferences prefs;
     prefs = await SharedPreferences.getInstance();
-    await prefs.setString(userFCMTokenKey, url);
+    await prefs.setString(userFCMTokenKey, token);
   }
 
   static Future<String?> getFCMToken() async {
@@ -20,5 +22,24 @@ class SharedPref {
     SharedPreferences prefs;
     prefs = await SharedPreferences.getInstance();
     await prefs.setString(userFCMTokenKey, '');
+  }
+
+  // Session List
+  static Future<void> setSessionList(SessionList session) async {
+    SharedPreferences prefs;
+    prefs = await SharedPreferences.getInstance();
+    await prefs.setString(sessionList, session.toRawJson());
+  }
+
+  static Future<SessionList?> getSessionList() async {
+    SharedPreferences prefs;
+    prefs = await SharedPreferences.getInstance();
+    return SessionList.fromRawJson(prefs.getString(sessionList) ?? '{}');
+  }
+
+  static Future<void> removeSessionList() async {
+    SharedPreferences prefs;
+    prefs = await SharedPreferences.getInstance();
+    await prefs.setString(sessionList, '');
   }
 }
