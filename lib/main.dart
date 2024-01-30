@@ -45,6 +45,14 @@ class _MainAppState extends State<MainApp> {
   String? emailErrorText;
   String? passwordErrorText;
 
+  Future<void> removeSessionFromList(Session? session) async {
+    sessionList?.sessions?.removeWhere((Session s) => s == session);
+    if (sessionList != null) {
+      SharedPref.setSessionList(sessionList!);
+    }
+    setState(() {});
+  }
+
   @override
   void initState() async {
     emailController = TextEditingController();
@@ -121,6 +129,10 @@ class _MainAppState extends State<MainApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
+        floatingActionButton: FloatingActionButton(onPressed: () async {
+          SharedPref.removeFCMToken();
+          SharedPref.removeSessionList();
+        }),
         body: Center(
           child: Visibility(
             visible: !isLoading,
@@ -178,6 +190,15 @@ class _MainAppState extends State<MainApp> {
                         try {
                           var promise = await getData();
                           output = await promiseToFuture(promise);
+                          Session session = Session.fromRawJson(output ?? '');
+                          if (sessionList == null) {
+                            sessionList = SessionList(sessions: [session]);
+                          } else {
+                            sessionList?.sessions?.add(session);
+                          }
+                          if (sessionList != null) {
+                            SharedPref.setSessionList(sessionList!);
+                          }
                           setState(() {});
                         } catch (e) {
                           if (kDebugMode) {
@@ -190,16 +211,101 @@ class _MainAppState extends State<MainApp> {
                     const SizedBox(
                       height: 20,
                     ),
-                    Text(
-                      output ?? 'No output pursed yet',
-                      textAlign: TextAlign.center,
-                    ),
+                    SessionListWidget(
+                      sessionList: sessionList,
+                      removeSessoin: removeSessionFromList,
+                    )
+                    // Text(
+                    //   output ?? 'No output pursed yet',
+                    //   textAlign: TextAlign.center,
+                    // ),
                   ],
                 ),
               ),
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class SessionListWidget extends StatelessWidget {
+  const SessionListWidget(
+      {super.key, required this.sessionList, required this.removeSessoin});
+
+  final SessionList? sessionList;
+  final Function(Session?) removeSessoin;
+
+  @override
+  Widget build(BuildContext context) {
+    if (sessionList == null) {
+      return const Text('No Library Session Parsed Yet.');
+    } else {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (int i = 0; i < (sessionList?.sessions?.length ?? 0); i++)
+            SingleSessionWidget(
+              session: sessionList?.sessions?[i],
+              removeSession: removeSessoin,
+            )
+        ],
+      );
+    }
+  }
+}
+
+class SingleSessionWidget extends StatelessWidget {
+  const SingleSessionWidget(
+      {super.key, required this.session, required this.removeSession});
+
+  final Session? session;
+  final Function(Session?) removeSession;
+
+  @override
+  Widget build(BuildContext context) {
+    if (session == null) {
+      return const SizedBox.shrink();
+    }
+    return Container(
+      height: 100,
+      width: double.maxFinite,
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              children: [
+                Text(
+                  session?.title ?? '--',
+                  maxLines: 3,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(
+                  height: 4,
+                ),
+                Text(
+                  session?.description ?? 'No description',
+                  maxLines: 3,
+                ),
+              ],
+            ),
+          ),
+          SizedBox(
+            height: 100,
+            width: 50,
+            child: IconButton(
+              icon: const Icon(Icons.delete),
+              onPressed: () {
+                removeSession.call(session);
+              },
+            ),
+          )
+        ],
       ),
     );
   }
