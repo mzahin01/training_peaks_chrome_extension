@@ -274,7 +274,7 @@ class _MainAppState extends State<MainApp> {
                           height: 20,
                         ),
                         const Text(
-                          'You need to get open the session you want to export and then you need to press the below button to get the session',
+                          'To export a session to Pillar, click on the session in the calendar view to view the session detail view. Then click on the button "Save" to include the session into the import. Once ready, click the button "Send" to send the saved session\'s to your Pillar library',
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(
@@ -307,7 +307,7 @@ class _MainAppState extends State<MainApp> {
                                   }
                                 }
                               },
-                              child: const Text('Get Library Data'),
+                              child: const Text('Save'),
                             ),
                             if (sessionList?.sessions?.isNotEmpty ?? false) ...[
                               const SizedBox(
@@ -319,7 +319,7 @@ class _MainAppState extends State<MainApp> {
                                   saveSessionList()
                                       .then((value) => removeError());
                                 },
-                                child: const Text('Save Library Data'),
+                                child: const Text('Send'),
                               ),
                             ]
                           ],
