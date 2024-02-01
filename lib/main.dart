@@ -1,6 +1,7 @@
 @JS()
 library my_js_library;
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -40,6 +41,8 @@ class _MainAppState extends State<MainApp> {
 
   bool isLoading = false;
 
+  String? backendError;
+
   TextEditingController? emailController;
   TextEditingController? passwordController;
   TextEditingController? ftpController;
@@ -62,6 +65,7 @@ class _MainAppState extends State<MainApp> {
     ftpController = TextEditingController();
     fcmToken = await SharedPref.getFCMToken();
     sessionList = await SharedPref.getSessionList();
+    ftpController?.text = (await SharedPref.getFTP())?.toString() ?? '';
     setState(() {});
     super.initState();
   }
@@ -114,13 +118,26 @@ class _MainAppState extends State<MainApp> {
         print(e.toString());
       }
     }
-    String sampleToken =
-        jsonDecode(response?.body ?? '')['data']['access_jwt_token'];
-    fcmToken = sampleToken;
-    SharedPref.setFCMToken(sampleToken);
+    if (response?.statusCode == 200) {
+      String sampleToken =
+          jsonDecode(response?.body ?? '')['data']['access_jwt_token'];
+      fcmToken = sampleToken;
+      SharedPref.setFCMToken(sampleToken);
+    } else {
+      backendError = jsonDecode(response?.body ?? '')['message'];
+      setState(() {});
+    }
     setState(() {
       isLoading = false;
     });
+  }
+
+  Future<void> removeError() async {
+    if (backendError != null) {
+      await Future.delayed(const Duration(seconds: 3));
+      backendError = null;
+      setState(() {});
+    }
   }
 
   Future<void> saveSessionList() async {
@@ -136,6 +153,7 @@ class _MainAppState extends State<MainApp> {
       return;
     }
     ftpErrorText = null;
+    await SharedPref.setFTP(ftp);
     setState(() {
       isLoading = true;
     });
@@ -167,6 +185,9 @@ class _MainAppState extends State<MainApp> {
       if (sessionList != null) {
         await SharedPref.setSessionList(sessionList!);
       }
+    } else {
+      backendError = jsonDecode(response?.body ?? '')['message'];
+      setState(() {});
     }
     setState(() {
       isLoading = false;
@@ -177,7 +198,7 @@ class _MainAppState extends State<MainApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        floatingActionButton: fcmToken != null
+        floatingActionButton: (fcmToken != null && fcmToken != '')
             ? MaterialButton(
                 color: Colors.amberAccent,
                 onPressed: () async {
@@ -193,129 +214,143 @@ class _MainAppState extends State<MainApp> {
                 ),
               )
             : null,
-        body: Center(
-          child: Visibility(
-            visible: !isLoading,
-            replacement: const CircularProgressIndicator(),
-            child: SingleChildScrollView(
+        body: Stack(
+          children: [
+            Center(
               child: Visibility(
-                visible: !isFCMTokenExpired(),
-                replacement: Padding(
-                  padding: const EdgeInsets.only(left: 20, right: 20),
-                  child: Column(
-                    children: [
-                      TextField(
-                        decoration: InputDecoration(
-                          label: const Text('Email'),
-                          errorText: emailErrorText,
-                        ),
-                        controller: emailController,
-                      ),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      TextField(
-                        decoration: InputDecoration(
-                          label: const Text('Password'),
-                          errorText: passwordErrorText,
-                        ),
-                        controller: passwordController,
-                        obscureText: true,
-                      ),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      MaterialButton(
-                        color: Colors.amberAccent,
-                        onPressed: () {
-                          getFCMToken();
-                        },
-                        child: const Text('Login to Pillar'),
-                      )
-                    ],
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    Padding(
+                visible: !isLoading,
+                replacement: const CircularProgressIndicator(),
+                child: SingleChildScrollView(
+                  child: Visibility(
+                    visible: !isFCMTokenExpired(),
+                    replacement: Padding(
                       padding: const EdgeInsets.only(left: 20, right: 20),
-                      child: TextField(
-                        decoration: InputDecoration(
-                          label: const Text('FTP'),
-                          errorText: ftpErrorText,
-                        ),
-                        controller: ftpController,
-                        onChanged: (value) {},
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    const Text(
-                      'You need to get open the session you want to export and then you need to press the below button to get the session',
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        MaterialButton(
-                          color: Colors.amberAccent,
-                          onPressed: () async {
-                            try {
-                              var promise = await getData();
-                              output = await promiseToFuture(promise);
-                              Session session =
-                                  Session.fromRawJson(output ?? '');
-                              if (sessionList == null) {
-                                sessionList = SessionList(sessions: [session]);
-                              } else {
-                                sessionList?.sessions?.add(session);
-                              }
-                              if (sessionList != null) {
-                                SharedPref.setSessionList(sessionList!);
-                              }
-                              setState(() {});
-                            } catch (e) {
-                              if (kDebugMode) {
-                                print('Error calling getData: $e');
-                              }
-                            }
-                          },
-                          child: const Text('Get Library Data'),
-                        ),
-                        if (sessionList?.sessions?.isNotEmpty ?? false) ...[
+                      child: Column(
+                        children: [
+                          TextField(
+                            decoration: InputDecoration(
+                              label: const Text('Email'),
+                              errorText: emailErrorText,
+                            ),
+                            controller: emailController,
+                          ),
                           const SizedBox(
-                            width: 20,
+                            height: 20,
+                          ),
+                          TextField(
+                            decoration: InputDecoration(
+                              label: const Text('Password'),
+                              errorText: passwordErrorText,
+                            ),
+                            controller: passwordController,
+                            obscureText: true,
+                          ),
+                          const SizedBox(
+                            height: 20,
                           ),
                           MaterialButton(
                             color: Colors.amberAccent,
-                            onPressed: () {
-                              saveSessionList();
+                            onPressed: () async {
+                              getFCMToken().then((value) => removeError());
                             },
-                            child: const Text('Save Library Data'),
+                            child: const Text('Login to Pillar'),
+                          )
+                        ],
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 20, right: 20),
+                          child: TextField(
+                            decoration: InputDecoration(
+                              label: const Text('FTP'),
+                              errorText: ftpErrorText,
+                            ),
+                            controller: ftpController,
                           ),
-                        ]
+                        ),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        const Text(
+                          'You need to get open the session you want to export and then you need to press the below button to get the session',
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            MaterialButton(
+                              color: Colors.amberAccent,
+                              onPressed: () async {
+                                try {
+                                  var promise = await getData();
+                                  output = await promiseToFuture(promise);
+                                  Session session =
+                                      Session.fromRawJson(output ?? '');
+                                  if (sessionList == null) {
+                                    sessionList =
+                                        SessionList(sessions: [session]);
+                                  } else {
+                                    sessionList?.sessions?.add(session);
+                                  }
+                                  if (sessionList != null) {
+                                    SharedPref.setSessionList(sessionList!);
+                                  }
+                                  setState(() {});
+                                } catch (e) {
+                                  if (kDebugMode) {
+                                    print('Error calling getData: $e');
+                                  }
+                                }
+                              },
+                              child: const Text('Get Library Data'),
+                            ),
+                            if (sessionList?.sessions?.isNotEmpty ?? false) ...[
+                              const SizedBox(
+                                width: 20,
+                              ),
+                              MaterialButton(
+                                color: Colors.amberAccent,
+                                onPressed: () {
+                                  saveSessionList()
+                                      .then((value) => removeError());
+                                },
+                                child: const Text('Save Library Data'),
+                              ),
+                            ]
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        SessionListWidget(
+                          sessionList: sessionList,
+                          removeSessoin: removeSessionFromList,
+                        )
                       ],
                     ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    SessionListWidget(
-                      sessionList: sessionList,
-                      removeSessoin: removeSessionFromList,
-                    )
-                    // Text(
-                    //   output ?? 'No output pursed yet',
-                    //   textAlign: TextAlign.center,
-                    // ),
-                  ],
+                  ),
                 ),
               ),
             ),
-          ),
+            Positioned(
+              child: Visibility(
+                visible: backendError != null,
+                child: Container(
+                  width: 600,
+                  height: 50,
+                  color: Colors.redAccent,
+                  child: Center(
+                    child: Text(backendError ?? ''),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

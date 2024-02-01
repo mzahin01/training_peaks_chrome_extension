@@ -4,6 +4,7 @@ import 'package:training_peaks_library_export_extension/session_model.dart';
 class SharedPref {
   static const String userFCMTokenKey = 'FCM_TOKEN';
   static const String sessionList = 'SESSION_LIST';
+  static const String ftpKey = 'FTP';
 
   // FCM Token
   static Future<void> setFCMToken(String token) async {
@@ -22,6 +23,25 @@ class SharedPref {
     SharedPreferences prefs;
     prefs = await SharedPreferences.getInstance();
     await prefs.setString(userFCMTokenKey, '');
+  }
+
+  // FTP
+  static Future<void> setFTP(int ftp) async {
+    SharedPreferences prefs;
+    prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(ftpKey, ftp);
+  }
+
+  static Future<int?> getFTP() async {
+    SharedPreferences prefs;
+    prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(ftpKey);
+  }
+
+  static Future<void> removeFTP() async {
+    SharedPreferences prefs;
+    prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(ftpKey, 0);
   }
 
   // Session List
