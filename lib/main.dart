@@ -77,10 +77,6 @@ class _MainAppState extends State<MainApp> {
   }
 
   Future<void> getFCMToken() async {
-    setState(() {
-      isLoading = true;
-    });
-
     if (emailController?.text == null || emailController?.text == '') {
       emailErrorText = 'Email is required';
       setState(() {});
@@ -93,7 +89,9 @@ class _MainAppState extends State<MainApp> {
       return;
     }
     passwordErrorText = null;
-    setState(() {});
+    setState(() {
+      isLoading = true;
+    });
     String baseUrl = 'stg-api-gw.pillar-app.com';
     // String baseUrl = 'prod-api-gw.pillar-app.com';
     var url = Uri.https(baseUrl, '/daroan/public/api/v1/auth/coach/login');
@@ -125,12 +123,63 @@ class _MainAppState extends State<MainApp> {
     });
   }
 
+  Future<void> saveSessionList() async {
+    if (ftpController?.text == null || ftpController?.text == '') {
+      ftpErrorText = 'FTP is required';
+      setState(() {});
+      return;
+    }
+    int? ftp = int.tryParse(ftpController?.text ?? '');
+    if (ftp == null || ftp < 30 || ftp > 500) {
+      ftpErrorText = 'Accepted range of FTP is 30-500';
+      setState(() {});
+      return;
+    }
+    ftpErrorText = null;
+    setState(() {
+      isLoading = true;
+    });
+    String baseUrl = 'stg-api-gw.pillar-app.com';
+    // String baseUrl = 'prod-api-gw.pillar-app.com';
+    var url = Uri.https(
+        baseUrl, '/trainer/private/api/v1/coach/library/session/import');
+
+    for (int i = 0; i < (sessionList?.sessions?.length ?? 0); i++) {
+      sessionList?.sessions?[i].ftp = ftp;
+    }
+    http.Response? response;
+    try {
+      response = await http.post(
+        url,
+        body: jsonEncode(sessionList?.toJson()),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $fcmToken',
+        },
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print(e.toString());
+      }
+    }
+    if (response?.statusCode == 200) {
+      sessionList?.sessions = [];
+      if (sessionList != null) {
+        await SharedPref.setSessionList(sessionList!);
+      }
+    }
+    setState(() {
+      isLoading = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
         floatingActionButton: fcmToken != null
-            ? FloatingActionButton(
+            ? MaterialButton(
+                color: Colors.amberAccent,
                 onPressed: () async {
                   SharedPref.removeFCMToken();
                   SharedPref.removeSessionList();
@@ -138,7 +187,10 @@ class _MainAppState extends State<MainApp> {
                   sessionList = null;
                   setState(() {});
                 },
-                child: const Text('Log Out'),
+                child: const Padding(
+                  padding: EdgeInsets.only(left: 20, right: 20),
+                  child: Text('Log Out'),
+                ),
               )
             : null,
         body: Center(
@@ -206,29 +258,47 @@ class _MainAppState extends State<MainApp> {
                     const SizedBox(
                       height: 20,
                     ),
-                    MaterialButton(
-                      color: Colors.amberAccent,
-                      onPressed: () async {
-                        try {
-                          var promise = await getData();
-                          output = await promiseToFuture(promise);
-                          Session session = Session.fromRawJson(output ?? '');
-                          if (sessionList == null) {
-                            sessionList = SessionList(sessions: [session]);
-                          } else {
-                            sessionList?.sessions?.add(session);
-                          }
-                          if (sessionList != null) {
-                            SharedPref.setSessionList(sessionList!);
-                          }
-                          setState(() {});
-                        } catch (e) {
-                          if (kDebugMode) {
-                            print('Error calling getData: $e');
-                          }
-                        }
-                      },
-                      child: const Text('Get Library Data'),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        MaterialButton(
+                          color: Colors.amberAccent,
+                          onPressed: () async {
+                            try {
+                              var promise = await getData();
+                              output = await promiseToFuture(promise);
+                              Session session =
+                                  Session.fromRawJson(output ?? '');
+                              if (sessionList == null) {
+                                sessionList = SessionList(sessions: [session]);
+                              } else {
+                                sessionList?.sessions?.add(session);
+                              }
+                              if (sessionList != null) {
+                                SharedPref.setSessionList(sessionList!);
+                              }
+                              setState(() {});
+                            } catch (e) {
+                              if (kDebugMode) {
+                                print('Error calling getData: $e');
+                              }
+                            }
+                          },
+                          child: const Text('Get Library Data'),
+                        ),
+                        if (sessionList?.sessions?.isNotEmpty ?? false) ...[
+                          const SizedBox(
+                            width: 20,
+                          ),
+                          MaterialButton(
+                            color: Colors.amberAccent,
+                            onPressed: () {
+                              saveSessionList();
+                            },
+                            child: const Text('Save Library Data'),
+                          ),
+                        ]
+                      ],
                     ),
                     const SizedBox(
                       height: 20,
