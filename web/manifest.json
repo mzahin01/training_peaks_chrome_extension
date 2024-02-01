@@ -2,6 +2,11 @@
     "name": "Training Peaks Library Export Extension",
     "description": "Training Peaks Library Export Extension",
     "version": "1.0.0",
+    "icons": {
+      "16": "favicon.png",
+      "192": "icons/Icon-192.png",
+      "512": "icons/Icon-512.png"
+    },
     "permissions": [
         "activeTab",
         "declarativeContent",
@@ -14,10 +19,13 @@
         "persistent": false
       },
       "page_action": {
-        "default_popup": "index.html"
-       
+        "default_popup": "index.html",
+        "default_icon": {
+          "16": "favicon.png",
+          "192": "icons/Icon-192.png",
+          "512": "icons/Icon-512.png"
+        }
       },
-     
       "content_security_policy": "script-src 'self' ; object-src 'self'",
       "content_scripts": [
         {
@@ -31,5 +39,4 @@
         }
       ],
       "manifest_version": 2
-    
 }
