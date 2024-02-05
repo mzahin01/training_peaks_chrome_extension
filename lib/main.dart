@@ -35,6 +35,8 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends State<MainApp> {
+  // String baseUrl = 'stg-api-gw.pillar-app.com';
+  String baseUrl = 'prod-api-gw.pillar-app.com';
   String? output;
   String? fcmToken;
   SessionList? sessionList;
@@ -96,8 +98,6 @@ class _MainAppState extends State<MainApp> {
     setState(() {
       isLoading = true;
     });
-    String baseUrl = 'stg-api-gw.pillar-app.com';
-    // String baseUrl = 'prod-api-gw.pillar-app.com';
     var url = Uri.https(baseUrl, '/daroan/public/api/v1/auth/coach/login');
     http.Response? response;
     try {
@@ -157,8 +157,7 @@ class _MainAppState extends State<MainApp> {
     setState(() {
       isLoading = true;
     });
-    String baseUrl = 'stg-api-gw.pillar-app.com';
-    // String baseUrl = 'prod-api-gw.pillar-app.com';
+
     var url = Uri.https(
         baseUrl, '/trainer/private/api/v1/coach/library/session/import');
 
